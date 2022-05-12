@@ -1,3 +1,4 @@
+# Libraries
 import imaplib
 import email
 from email.header import decode_header
@@ -18,227 +19,188 @@ class Dictlist(dict):
         self[key].append(value)
 
 
+# Spam detecter class
+class SpamDetected:
+    def __init__(self, user, password, server):
+        # logging:
+        self.user = user
+        self.password = password
+        # Initiate a connection with the host
+        self.server = server
 
-# Variables
-user = 'dan020304dan93@gmail.com'
-password = 'ufggzyqlhvrnrbic'
+    def decode(self):
+        counter = []
 
-mainstring = ""
-counter = []
+        # Dict for counting latter's and numbs in subject+budy
+        d = {'Letters': 0, 'Numbers': 0}
 
-d = {'Letters': 0, 'Numbers': 0}
+        SubjectListSorted = []
+        BodyListSorted = []
 
-SubjectListSorted = []
-BodyListSorted = []
+        SubjectDictlist = Dictlist()
+        BodyDictlist = Dictlist()
 
-SubjektDictlist = Dictlist()
-BodyDictlist = Dictlist()
+        # Remake date into needed format
+        CurrentDate = (datetime.datetime.now()).strftime("%d %b %Y")
 
-# Initiate a connection with the host (in this case, Gmail)
-server = "imap.gmail.com"
-imap = imaplib.IMAP4_SSL(server)
-
-# Remake date into needed format
-CurentDate = (datetime.datetime.now()).strftime("%d %b %Y")
-
-if CurentDate[0] == '0':
-    RedefinedDate = CurentDate[1] + CurentDate[2] + CurentDate[3] + CurentDate[4] + CurentDate[5] + CurentDate[6] + \
-                    CurentDate[7] + CurentDate[8] + CurentDate[9] + CurentDate[10]
-
-else:
-    RedefinedDate = CurentDate
-
-print(RedefinedDate)
-
-# login into the gmail account
-imap.login(user, password)
-
-# Using SELECT to chose the e-mails.
-res, messages = imap.select('INBOX')
-
-# Calculating the total number of sent Emails
-messages = int(messages[0])
-
-# Number of recent e-mails to be fetched
-n = 20
-
-# Iterating over the sent emails
-for i in range(messages, messages - n, -1):
-    res, msg = imap.fetch(str(i), "(RFC822)")  # Using the RFC822 protocol
-    for response in msg:
-        if isinstance(response, tuple):
-            msg = email.message_from_bytes(response[1])
-
-            # Retrieving the senders email
-            From = msg["From"]
-
-            # Retrieving the subject of the email
-            subject = msg["Subject"]
-
-            # Retrieving the date of the email
-            DateOfMassages = msg["Date"]
-
-            # Remake date of mails into needed format (should be rewritten)
-            DateOfMassages_var = DateOfMassages[5] + DateOfMassages[6] + DateOfMassages[7] + DateOfMassages[8] + \
-                                 DateOfMassages[9] + DateOfMassages[10] + \
-                                 DateOfMassages[11] + DateOfMassages[12] + DateOfMassages[13] + DateOfMassages[14] + \
-                                 DateOfMassages[15]
-
-            if DateOfMassages_var[0] == '0':
-                DateOfMassages_var = DateOfMassages[6] + DateOfMassages[7] + DateOfMassages[8] + DateOfMassages[9] + \
-                                     DateOfMassages[10] + \
-                                     DateOfMassages[11] + DateOfMassages[12] + DateOfMassages[13] + DateOfMassages[14] + \
-                                     DateOfMassages[15]
-
-            # Revue current date with mails day (it's better to wound way how to immediately
-            # get mail with needed date without checking)
-            if DateOfMassages_var == RedefinedDate:
-
-                # Create dict where key is sender and parameters is subjects
-                counter.append(From)
-                tu = From
-                yo = decode_header(msg["Subject"])[0][0]  # дописать если нет сабджекта
-                SubjektDictlist[tu] = yo
-
-                # Create dict where key is sender and parameters is budy of letter
-                if msg.is_multipart():
-                    # iterate over email parts
-                    for part in msg.walk():
-                        # extract content type of email
-                        content_type = part.get_content_type()
-                        content_disposition = str(part.get("Content-Disposition"))
-                        try:
-                            # get the email body
-                            body = part.get_payload(decode=True).decode()
-                        except:
-                            pass
-                        if content_type == "text/plain" and "attachment" not in content_disposition:
-                            # print text/plain emails and skip attachments
-                            BodyDictlist[From] = body
-
-# This variable creates array with keys which matching our requirement be larger than 9
-pedro = list((x) for x in set(counter) if counter.count(x) >= 2)
-
-
-# эти два цикла проверяют нет ли у нас в контейнере элементов не соотвецтвуюших нашему параметру быть >= 10
-# Если есть, он его удаляет
-x = 0
-while x < len(SubjektDictlist.keys()):
-    if list(SubjektDictlist.keys())[x] in pedro:
-        print()
-    else:
-        SubjektDictlist.pop(list(SubjektDictlist.keys())[x])
-        x -= 1
-    x += 1
-
-x = 0
-while x < len(BodyDictlist.keys()):
-    if list(BodyDictlist.keys())[x] in pedro:
-        print()
-    else:
-        BodyDictlist.pop(list(BodyDictlist.keys())[x])
-        x -= 1
-    x += 1
-
-# print(pidoras228)
-
-# print(pidoras228)
-
-
-# print(" ".join(pidoras228[pedro[0]]))
-
-# print(pedro)
-
-
-# эти два цикла считают количество букв и цивр сначала в сабджекте а потом в бади письма
-
-
-try:
-    del SubjektDictlist[user]
-except KeyError:
-    print('there is no masage from you')
-
-for each in SubjektDictlist.values():
-    SubjectListSorted += each
-
-'''
- for c in each:
-        if isinstance(c, type(b'')):
-            listt = ["".join(c.decode("utf-8"))]
-            st += listt
-            print('bytes found')
+        if CurrentDate[0] == '0':
+            RedefinedDate = CurrentDate[1] + CurrentDate[2] + CurrentDate[3] + CurrentDate[4] + CurrentDate[5] + \
+                            CurrentDate[6] + CurrentDate[7] + CurrentDate[8] + CurrentDate[9] + CurrentDate[10]
         else:
-'''
+            RedefinedDate = CurrentDate
 
-for each in BodyDictlist.values():
-    each = [i.split('\r\n', 1)[0] for i in each]
-    BodyListSorted += each
+        # login into the gmail account
+        imap = imaplib.IMAP4_SSL(self.server)
+        imap.login(self.user, self.password)
 
-print(BodyListSorted)
-print(SubjectListSorted)
+        # Using SELECT to choose the e-mails.
+        res, messages = imap.select('INBOX')
 
-'''
-    for v in each:
-        if isinstance(v, type(b'')):
-            listt = ["".join(v.decode("utf-8"))]
-            stt += listt.decode("utf-8")
-        else:
-'''
+        # Calculating the total number of sent Emails
+        messages = int(messages[0])
 
-for each in " ".join(BodyListSorted):
-    if each.isalpha():
-        d['Letters'] += 1
-    if each.isdigit():
-        d['Numbers'] += 1
-    else:
-        print()
+        # Number of recent e-mails to be fetched
+        n = 20
 
-for each in " ".join(SubjectListSorted):
+        # Iterating over the sent emails
+        for i in range(messages, messages - n, -1):
+            res, msg = imap.fetch(str(i), "(RFC822)")  # Using the RFC822 protocol
+            for response in msg:
+                if isinstance(response, tuple):
+                    msg = email.message_from_bytes(response[1])
 
-    if each.isalpha():
-        d['Letters'] += 1
-    if each.isdigit():
-        d['Numbers'] += 1
-    else:
-        print()
+                    # Retrieving the senders email
+                    From = msg["From"]
 
-print(d['Numbers'], d['Letters'])
+                    # Retrieving the subject of the email
+                    subject = msg["Subject"]
 
-mainstring = "Received mails on themes:  " + ", ".join(SubjectListSorted) + " With messages: " + "\n".join(
-    BodyListSorted) + \
-             "It contains " + str(d['Letters']) + " letters and " + str(d['Numbers']) + " numbers."
-print(mainstring)
+                    # Retrieving the date of the email
+                    DateOfMassages = msg["Date"]
 
-recipients = [user]
+                    # Remake date of mails into needed format (should be rewritten)
+                    DateOfMassages_var = DateOfMassages[5] + DateOfMassages[6] + DateOfMassages[7] + DateOfMassages[8] \
+                                         + DateOfMassages[9] + DateOfMassages[10] + DateOfMassages[11] \
+                                         + DateOfMassages[12] + DateOfMassages[13] + DateOfMassages[14] + \
+                                         DateOfMassages[15]
 
-# create message
-msg = MIMEText(mainstring, 'plain', 'utf-8')
-msg['Subject'] = Header('subject', 'utf-8')
-msg['From'] = user
-msg['To'] = ", ".join(recipients)
+                    if DateOfMassages_var[0] == '0':
+                        DateOfMassages_var = DateOfMassages[6] + DateOfMassages[7] + DateOfMassages[8] + \
+                                             DateOfMassages[9] + DateOfMassages[10] + DateOfMassages[11] \
+                                             + DateOfMassages[12] + DateOfMassages[13] + DateOfMassages[14] + \
+                                             DateOfMassages[15]
 
-# send it via gmail
-s = SMTP_SSL(server, 465, timeout=10)
-s.set_debuglevel(1)
-try:
-    s.login(user, password)
-    s.sendmail(msg['From'], recipients, msg.as_string())
-finally:
-    s.quit()
-# Subject from
+                    # Revue current date with mails day (it's better to wound way how to immediately
+                    # get mail with needed date without checking)
+                    if DateOfMassages_var == RedefinedDate:
+
+                        # Create dict where key is sender and parameters is subjects
+                        counter.append(From)
+                        tu = From
+                        yo = decode_header(msg["Subject"])[0][0]  # дописать если нет сабджекта
+                        SubjectDictlist[tu] = yo
+
+                        # Create dict where key is sender and parameters is budy of letter
+                        if msg.is_multipart():
+                            # iterate over email parts
+                            for part in msg.walk():
+                                # extract content type of email
+                                content_type = part.get_content_type()
+                                content_disposition = str(part.get("Content-Disposition"))
+                                try:
+                                    # get the email body
+                                    body = part.get_payload(decode=True).decode()
+                                except:
+                                    pass
+                                if content_type == "text/plain" and "attachment" not in content_disposition:
+                                    # print text/plain emails and skip attachments
+                                    BodyDictlist[From] = body
+
+        # This variable creates container with keys which matching our requirement be larger than 9
+        cont = list(x for x in set(counter) if counter.count(x) >= 2)
+
+        # Checking if there exist elements which less the 10. If them exist, it will delete them.
+        x = 0
+        while x < len(SubjectDictlist.keys()):
+            if list(SubjectDictlist.keys())[x] in cont:
+                print()
+            else:
+                SubjectDictlist.pop(list(SubjectDictlist.keys())[x])
+                x -= 1
+            x += 1
+
+        x = 0
+        while x < len(BodyDictlist.keys()):
+            if list(BodyDictlist.keys())[x] in cont:
+                print()
+            else:
+                BodyDictlist.pop(list(BodyDictlist.keys())[x])
+                x -= 1
+            x += 1
+
+        # Avoiding massages from logging user
+        try:
+            del SubjectDictlist[self.user]
+        except KeyError:
+            print('there is no masage from you')
+
+        # Create lists with only subjects and body's which already have been sorted
+        for each in SubjectDictlist.values():
+            SubjectListSorted += each
+
+        for each in BodyDictlist.values():
+            each = [i.split('\r\n', 1)[0] for i in each]
+            BodyListSorted += each
+
+        # Indicate letters and numbers
+        for each in " ".join(BodyListSorted):
+            if each.isalpha():
+                d['Letters'] += 1
+            if each.isdigit():
+                d['Numbers'] += 1
+            else:
+                pass
+
+        for each in " ".join(SubjectListSorted):
+
+            if each.isalpha():
+                d['Letters'] += 1
+            if each.isdigit():
+                d['Numbers'] += 1
+            else:
+                pass
+
+        # Create main string which will be sent like a report
+        mainstring = "Received mails on themes:  " + ", ".join(SubjectListSorted) + " With messages: " + "\n".join(
+            BodyListSorted) + \
+                     "It contains " + str(d['Letters']) + " letters and " + str(d['Numbers']) + " numbers."
+
+        # Sending mail
+        recipients = [self.user]
+
+        msg = MIMEText(mainstring, 'plain', 'utf-8')
+        msg['Subject'] = Header('subject', 'utf-8')
+        msg['From'] = self.user
+        msg['To'] = ", ".join(recipients)
+
+        # send it via gmail
+        s = SMTP_SSL(self.server, 465, timeout=10)
+        s.set_debuglevel(1)
+        try:
+            s.login(self.user, self.password)
+            s.sendmail(msg['From'], recipients, msg.as_string())
+        finally:
+            s.quit()
+
+        # Deleting massage
+        mail = IMAPClient(self.server, ssl=True, port=993)
+        mail.login(self.user, self.password)
+        mail.select_folder('Inbox')
+
+        for each in SubjectListSorted:
+            delMsg = mail.search('subject "' + each + '"')
+            mail.delete_messages(delMsg)
 
 
-'''
-message = imap.search(None, 'subject "This Is a SPAM Subject"')
-messages = messages[0].split()
-for x in messages:
-    message = imap.store(x, '+X-GM-LABELS', '\\Trash')
-'''
-
-mail = IMAPClient('imap.gmail.com', ssl=True, port=993)
-mail.login(user, password)
-totalMail = mail.select_folder('Inbox')
-
-for each in SubjectListSorted:
-    delMsg = mail.search('subject "' + each + '"')
-    mail.delete_messages(delMsg)
+if __name__ == '__main__':
+    SpamDetected('dan020304dan93@gmail.com', 'ufggzyqlhvrnrbic', "imap.gmail.com").decode()
