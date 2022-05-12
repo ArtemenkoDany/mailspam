@@ -63,7 +63,7 @@ class SpamDetected:
         messages = int(messages[0])
 
         # Number of recent e-mails to be fetched
-        n = 20
+        n = 30
 
         # Iterating over the sent emails
         for i in range(messages, messages - n, -1):
@@ -123,7 +123,7 @@ class SpamDetected:
                                     BodyDictlist[From] = body
 
         # This variable creates container with keys which matching our requirement be larger than 9
-        cont = list(x for x in set(counter) if counter.count(x) >= 2)
+        cont = list(x for x in set(counter) if counter.count(x) >= 10)
 
         cont | should.not_be.empty
 
