@@ -32,11 +32,11 @@ That code works like:
 2. choose first 20 massages
 3. check if date of mails are same with current date
 4. check if there 10 mail from same sender
-5. send to connected mail report of what was in mails (subject + body) and count of letters and numbers in it
+5. send to connected mail report of what was in mails (subject + body) 
+    and count of letters and numbers in it
 6. delete that 10 mails
 ```
 
-<img src="https://github.com/ArtemenkoDany/MLOps-Trainee---Test-task/blob/main/photos/image0.jpg" alt="image" width="30%"/>
 
 <div align="center">
  <a href="https://www.instagram.com/danyderudenko/">
