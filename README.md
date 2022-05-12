@@ -1,12 +1,13 @@
-# Mail messages detecter
+# Mail messages detection with Python
+## Example of realization:
 
+<img src="https://github.com/ArtemenkoDany/mailspam/blob/main/Photos/0.jpg" alt="image" width="50%"/>
+<img src="https://github.com/ArtemenkoDany/mailspam/blob/main/Photos/1.jpg" alt="image" width="50%"/>
+<img src="https://github.com/ArtemenkoDany/mailspam/blob/main/Photos/3.jpg" alt="image" width="50%"/>
 
-## This project built with Python
-
-
-## using libraries:
+## Used libraries:
 ### imaplib
-TO work with mail.
+To work with mail.
 Here is documentation for imaplib: https://docs.python.org/3/library/imaplib.html
 
 ### grappa
