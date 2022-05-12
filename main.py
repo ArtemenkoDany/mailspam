@@ -217,40 +217,4 @@ class SpamDetected:
 
 
 if __name__ == '__main__':
-    SpamDetected('dan020304dan93@gmail.com', 'ufggzyqlhvrnrbic', "imap.gmail.com").decode()
-
-'''
- for c in each:
-        if isinstance(c, type(b'')):
-            listt = ["".join(c.decode("utf-8"))]
-            st += listt
-            print('bytes found')
-        else:
-'''
-
-# print(BodyListSorted)
-# print(SubjectListSorted)
-
-'''
-    for v in each:
-        if isinstance(v, type(b'')):
-            listt = ["".join(v.decode("utf-8"))]
-            stt += listt.decode("utf-8")
-        else:
-'''
-
-# print(d['Numbers'], d['Letters'])
-
-
-# print(mainstring)
-
-
-# create message
-
-
-'''
-message = imap.search(None, 'subject "This Is a SPAM Subject"')
-messages = messages[0].split()
-for x in messages:
-    message = imap.store(x, '+X-GM-LABELS', '\\Trash')
-'''
+    SpamDetected('your@gmail.com', 'yourpass', "imap.gmail.com").decode()
