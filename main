@@ -2,11 +2,13 @@ import imaplib
 import email
 from email.header import decode_header
 import datetime
-from email.message import Message
-from time import time
+from email.header import Header
+from email.mime.text import MIMEText
+from smtplib import SMTP_SSL
+from imapclient import IMAPClient
 
 
-#специальный словарь у которого под один ключь много параметров
+# Dict with one key for array of elements
 class Dictlist(dict):
     def __setitem__(self, key, value):
         try:
@@ -16,37 +18,49 @@ class Dictlist(dict):
         self[key].append(value)
 
 
-address = 'dan020304dan93@gmail.com'
+
+# Variables
+user = 'dan020304dan93@gmail.com'
 password = 'ufggzyqlhvrnrbic'
 
-date=(datetime.datetime.now()).strftime("%d %b %Y")
+mainstring = ""
+counter = []
 
+d = {'Letters': 0, 'Numbers': 0}
 
-if date[0] == '0':
-    datee = date[1]+date[2]+date[3]+date[4]+date[5]+date[6]+date[7]+date[8]+date[9]+date[10]
+SubjectListSorted = []
+BodyListSorted = []
 
-print(datee)
+SubjektDictlist = Dictlist()
+BodyDictlist = Dictlist()
 
 # Initiate a connection with the host (in this case, Gmail)
 server = "imap.gmail.com"
 imap = imaplib.IMAP4_SSL(server)
 
-# login into the gmail account
-imap.login(address, password)
+# Remake date into needed format
+CurentDate = (datetime.datetime.now()).strftime("%d %b %Y")
 
+if CurentDate[0] == '0':
+    RedefinedDate = CurentDate[1] + CurentDate[2] + CurentDate[3] + CurentDate[4] + CurentDate[5] + CurentDate[6] + \
+                    CurentDate[7] + CurentDate[8] + CurentDate[9] + CurentDate[10]
+
+else:
+    RedefinedDate = CurentDate
+
+print(RedefinedDate)
+
+# login into the gmail account
+imap.login(user, password)
 
 # Using SELECT to chose the e-mails.
 res, messages = imap.select('INBOX')
 
-# Caluclating the total number of sent Emails
+# Calculating the total number of sent Emails
 messages = int(messages[0])
 
 # Number of recent e-mails to be fetched
 n = 20
-
-counter = []
-pidoras228 = Dictlist()
-slave228 = Dictlist()
 
 # Iterating over the sent emails
 for i in range(messages, messages - n, -1):
@@ -61,34 +75,32 @@ for i in range(messages, messages - n, -1):
             # Retrieving the subject of the email
             subject = msg["Subject"]
 
-            # Retrieving the data of the email
-            datepidor = msg["Date"]
+            # Retrieving the date of the email
+            DateOfMassages = msg["Date"]
 
+            # Remake date of mails into needed format (should be rewritten)
+            DateOfMassages_var = DateOfMassages[5] + DateOfMassages[6] + DateOfMassages[7] + DateOfMassages[8] + \
+                                 DateOfMassages[9] + DateOfMassages[10] + \
+                                 DateOfMassages[11] + DateOfMassages[12] + DateOfMassages[13] + DateOfMassages[14] + \
+                                 DateOfMassages[15]
 
-#по уебански подгоняем дату по параметрам (нужно исправить)
-            datepidorr = datepidor[5]+datepidor[6]+datepidor[7]+datepidor[8]+datepidor[9]+datepidor[10]+ \
-            datepidor[11]+ datepidor[12]+ datepidor[13]+ datepidor[14]
+            if DateOfMassages_var[0] == '0':
+                DateOfMassages_var = DateOfMassages[6] + DateOfMassages[7] + DateOfMassages[8] + DateOfMassages[9] + \
+                                     DateOfMassages[10] + \
+                                     DateOfMassages[11] + DateOfMassages[12] + DateOfMassages[13] + DateOfMassages[14] + \
+                                     DateOfMassages[15]
 
-            if datepidorr[0] == '0':
-                datepidorr = datepidor[6]+datepidor[7]+datepidor[8]+datepidor[9]+datepidor[10]+ \
-            datepidor[11]+ datepidor[12]+ datepidor[13]+ datepidor[14]+ datepidor[15]
+            # Revue current date with mails day (it's better to wound way how to immediately
+            # get mail with needed date without checking)
+            if DateOfMassages_var == RedefinedDate:
 
-# проверка на время, немного уебанская может похже придумать как фильтровать сразу письма по дате
-#а так она просто проеряет совпадает ли дата отправленного письма с сегодняшней датой
-#переобразовуя дату с письма под формат даты питона
-            if datepidorr == datee:
-
-#создаем наш особый словарь где ключь это отправитель а параметры - сабджект письма
+                # Create dict where key is sender and parameters is subjects
                 counter.append(From)
                 tu = From
-                yo =  decode_header(msg["Subject"])[0][0]
-                pidoras228[tu]= yo
+                yo = decode_header(msg["Subject"])[0][0]  # дописать если нет сабджекта
+                SubjektDictlist[tu] = yo
 
-
-                #print("From : " , From)
-
-
-#создаем наш особый словарь где ключь это отправитель а параметры - бади письма
+                # Create dict where key is sender and parameters is budy of letter
                 if msg.is_multipart():
                     # iterate over email parts
                     for part in msg.walk():
@@ -102,84 +114,131 @@ for i in range(messages, messages - n, -1):
                             pass
                         if content_type == "text/plain" and "attachment" not in content_disposition:
                             # print text/plain emails and skip attachments
-                            slave228[From]=body
-                print(slave228)
+                            BodyDictlist[From] = body
 
-
-
-#эта переменная создает масив с ключами соотвецтвуюших нашему параметру быть >= 10
+# This variable creates array with keys which matching our requirement be larger than 9
 pedro = list((x) for x in set(counter) if counter.count(x) >= 2)
 
-#эти два цикла проверяют нет ли у нас в контейнере элементов не соотвецтвуюших нашему параметру быть >= 10
-#Если есть, он его удаляет
-x=0
-while x< len(pidoras228.keys()):
-    if list(pidoras228.keys())[x] in pedro:
+
+# эти два цикла проверяют нет ли у нас в контейнере элементов не соотвецтвуюших нашему параметру быть >= 10
+# Если есть, он его удаляет
+x = 0
+while x < len(SubjektDictlist.keys()):
+    if list(SubjektDictlist.keys())[x] in pedro:
         print()
     else:
-        pidoras228.pop(list(pidoras228.keys())[x])
-        x-=1
-    x+=1
+        SubjektDictlist.pop(list(SubjektDictlist.keys())[x])
+        x -= 1
+    x += 1
 
-x=0
-while x< len(slave228.keys()):
-    if list(slave228.keys())[x] in pedro:
+x = 0
+while x < len(BodyDictlist.keys()):
+    if list(BodyDictlist.keys())[x] in pedro:
         print()
     else:
-        slave228.pop(list(slave228.keys())[x])
-        x-=1
-    x+=1
+        BodyDictlist.pop(list(BodyDictlist.keys())[x])
+        x -= 1
+    x += 1
 
-print(pidoras228)
+# print(pidoras228)
 
-#print(pidoras228)
+# print(pidoras228)
 
 
-#print(" ".join(pidoras228[pedro[0]]))
+# print(" ".join(pidoras228[pedro[0]]))
 
-print(pedro)
+# print(pedro)
 
-mainstring =""
 
-x=0
-n=0
-#эти два цикла считают количество букв и цивр сначала в сабджекте а потом в бади письма
-d = {'Буквы': 0, 'Цифры': 0}
-while x < len(pidoras228):
-    while n< len(pidoras228[pedro[x]]):
-        for i in pidoras228[pedro[x]][n]:
-            if i.isalpha():
-              d['Буквы'] += 1
-            elif i.isdigit():
-              d['Цифры'] += 1
-        n+=1
-    x+=1
+# эти два цикла считают количество букв и цивр сначала в сабджекте а потом в бади письма
 
-x=0
-n=0
-while x < len(slave228):
-    while n< len(slave228[pedro[x]]):
-        for i in slave228[pedro[x]][n]:
-            if i.isalpha():
-              d['Буквы'] += 1
-            elif i.isdigit():
-              d['Цифры'] += 1
-        n+=1
-    x+=1
 
-print(d['Цифры'], d['Буквы'])
+try:
+    del SubjektDictlist[user]
+except KeyError:
+    print('there is no masage from you')
 
-x=0
-while x < len(pidoras228.keys()):
-    mainstring = "Received mails on themes:  "+ " ".join(pidoras228[pedro[x]])+"With messages: "+" ".join(slave228[pedro[x]])+\
-            "It contains "+ str(d['Буквы'])+" letters and "+str(d['Цифры'])+" numbers."
-    x+=1
+for each in SubjektDictlist.values():
+    SubjectListSorted += each
 
+'''
+ for c in each:
+        if isinstance(c, type(b'')):
+            listt = ["".join(c.decode("utf-8"))]
+            st += listt
+            print('bytes found')
+        else:
+'''
+
+for each in BodyDictlist.values():
+    each = [i.split('\r\n', 1)[0] for i in each]
+    BodyListSorted += each
+
+print(BodyListSorted)
+print(SubjectListSorted)
+
+'''
+    for v in each:
+        if isinstance(v, type(b'')):
+            listt = ["".join(v.decode("utf-8"))]
+            stt += listt.decode("utf-8")
+        else:
+'''
+
+for each in " ".join(BodyListSorted):
+    if each.isalpha():
+        d['Letters'] += 1
+    if each.isdigit():
+        d['Numbers'] += 1
+    else:
+        print()
+
+for each in " ".join(SubjectListSorted):
+
+    if each.isalpha():
+        d['Letters'] += 1
+    if each.isdigit():
+        d['Numbers'] += 1
+    else:
+        print()
+
+print(d['Numbers'], d['Letters'])
+
+mainstring = "Received mails on themes:  " + ", ".join(SubjectListSorted) + " With messages: " + "\n".join(
+    BodyListSorted) + \
+             "It contains " + str(d['Letters']) + " letters and " + str(d['Numbers']) + " numbers."
 print(mainstring)
 
-new_message = Message()
-new_message["From"] = "hello@itsme.com"
-new_message["Subject"] = "My new mail."
-new_message.set_payload("This is my message.")
+recipients = [user]
 
-imap.append('INBOX', '', imaplib.Time2Internaldate(time()), mainstring.encode('utf-8'))
+# create message
+msg = MIMEText(mainstring, 'plain', 'utf-8')
+msg['Subject'] = Header('subject', 'utf-8')
+msg['From'] = user
+msg['To'] = ", ".join(recipients)
+
+# send it via gmail
+s = SMTP_SSL(server, 465, timeout=10)
+s.set_debuglevel(1)
+try:
+    s.login(user, password)
+    s.sendmail(msg['From'], recipients, msg.as_string())
+finally:
+    s.quit()
+# Subject from
+
+
+'''
+message = imap.search(None, 'subject "This Is a SPAM Subject"')
+messages = messages[0].split()
+for x in messages:
+    message = imap.store(x, '+X-GM-LABELS', '\\Trash')
+'''
+
+mail = IMAPClient('imap.gmail.com', ssl=True, port=993)
+mail.login(user, password)
+totalMail = mail.select_folder('Inbox')
+
+for each in SubjectListSorted:
+    delMsg = mail.search('subject "' + each + '"')
+    mail.delete_messages(delMsg)
